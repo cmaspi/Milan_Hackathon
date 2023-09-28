@@ -5,6 +5,7 @@ from transformers import TFAutoModelForSequenceClassification
 from transformers import AutoTokenizer, AutoConfig
 import numpy as np
 from scipy.special import softmax
+from typing import List
 
 def histogram(ratings):
     num_bins = 5
