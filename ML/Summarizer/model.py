@@ -6,7 +6,7 @@ import torch.nn.functional as F
 import numpy as np
 
 import math
-import utils
+import utils as utils
 
 
 class GradientReverse(torch.autograd.Function):

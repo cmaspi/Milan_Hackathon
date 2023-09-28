@@ -3,7 +3,7 @@ import torch.nn as nn
 
 import os
 from typing import List
-import utils
+import utils as utils
 from model import Condense, Abstract
 from transformers import BertTokenizer
 import json
@@ -32,7 +32,6 @@ class Summarize:
         print('Loading models...')
         assert os.path.exists(condense_file)
         best_point = torch.load(condense_file, map_location=torch.device('cpu'))
-
         con_encoder.load_state_dict(best_point['encoder'])
         con_model.load_state_dict(best_point['model'])
 
