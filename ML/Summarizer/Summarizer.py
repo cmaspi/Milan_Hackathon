@@ -12,6 +12,9 @@ import time
 
 class Summarize:
     def __init__(self):
+        """
+        Initializes and loads the models
+        """
         condense_file = './model/condense.model'
         abstract_file = './model/abstract.model'
 
@@ -44,7 +47,18 @@ class Summarize:
         self.con_model = con_model
         self.model = model
 
-    def summarize(self, movie_name: str, reviews: List):
+    def summarize(self, movie_name: str, reviews: List[str]) -> str:
+        """
+        This method takes the list of reviews to summarize and the movie name
+        to generate a brief summary of the reviews
+
+        Args:
+            movie_name (str): Name of the movie
+            reviews (List[str]): list of the reviews
+
+        Returns:
+            str: the summary of the reviews
+        """
         x_test = utils.abstract_data(reviews)
         x_batch = [x_test]
 
@@ -71,7 +85,7 @@ class Summarize:
         pred = list([int(p) for p in pred if int(p) != 101])
         try:
             pred = pred[:pred.index(102)]
-        except:
+        except Exception as e:
             pass
         pred = self.tokenizer.decode(pred)
         pred = pred.replace('<movie>', movie_name)
@@ -97,4 +111,3 @@ if __name__ == '__main__':
     print(nlp.summarize("xyz", reviews))
     end = time.time()
     print(end-start)
-    
