@@ -1,0 +1,12 @@
+Download this dataset: https://www.kaggle.com/datasets/stefanoleone992/rotten-tomatoes-movies-and-critic-reviews-dataset?select=rotten_tomatoes_movies.csv
+
+Place the dataset in this directory
+
+Run the following commands:
+
+```
+python3 init_db.py
+psql movie_reviews -f init_db.sql
+```
+
+(assuming you have a database called `movie_reviews`)

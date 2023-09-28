@@ -1,13 +1,12 @@
-[+] GET /names           - all movies names and ids (for search autocomplete)
-[+] GET /search?q={}     - search by title (substring)
-    
-[+] GET /movies       - sort and pagination
-       - ?sort={title/year/rating} &order={asc/desc} &page={int} 
-       - all query params are optional
-[+] GET /movies/{id}
-    
-    crud for reviews
-[+] GET /movies/{id}/reviews
-[+] POST /movies/{id}/reviews              - needs auth
-[ ] POST /movies/{id}/reviews/{rev_id}     - needs auth
-[+] DELETE /movies/{id}/reviews/{rev_id}   - needs auth
+GET /names           - all movies names and ids (for search autocomplete)
+GET /search?q={}     - search by title (substring)
+
+GET /movies       - sort and pagination
+   - ?sort={title/year/rating} &order={asc/desc} &page={int} 
+   - all query params are optional
+GET /movies/{id}
+
+crud for reviews
+GET /movies/{id}/reviews
+POST /movies/{id}/reviews              - needs auth
+DELETE /movies/{id}/reviews/{rev_id}   - needs auth

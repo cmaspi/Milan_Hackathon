@@ -3,11 +3,15 @@ import psycopg2
 import psycopg2.extras
 import aiosql
 from dotenv import load_dotenv
-from auth import get_user_details
 from fastapi import Header, HTTPException
 from google.auth import exceptions
 
 from typing import Tuple
+
+from auth import get_user_details
+from ML.Summarizer import Summarize
+
+summarizer = Summarize()
 
 load_dotenv()
 
@@ -28,6 +32,50 @@ conn = psycopg2.connect(
     cursor_factory=psycopg2.extras.DictCursor,
 )
 conn.autocommit = True
+
+
+def map_info_row(row):
+    id, title, info = row
+    return {"id": id, "movie_title": title, "movie_info": info}
+
+
+def map_review_row(row):
+    movie_id, name, email, review, rating, id = row
+    return {
+        "id": id,
+        "movie_id": movie_id,
+        "user_name": name,
+        "user_email": email,
+        "review": review,
+        "rating": rating,
+    }
+
+def update_summary(movie_title, movie_id):
+    res = queries.get_movie_reviews(conn, movie_id=movie_id)
+    reviews = [row[3] for row in res]
+    summary = summarizer.summarize(movie_title, reviews)
+    try:
+        queries.update_movie_summary(conn, movie_id=movie_id, summary=summary)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    print(summary)
+    return summary
+
+def map_movie_row(row):
+    id, movie_title, movie_info, release_year, directors, content_rating, genres, tomatometer_rating, summary = row
+    if summary is None:
+        summary = update_summary(movie_title, id)
+    return {
+        "id": id,
+        "movie_title": movie_title,
+        "movie_info": movie_info,
+        "release_year": release_year,
+        "directors": directors,
+        "content_rating": content_rating,
+        "genres": genres,
+        "tomatometer_rating": tomatometer_rating,
+        "summary": summary
+    }
 
 
 def verify_auth_token(Authorization: str = Header()) -> Tuple[str, str]:

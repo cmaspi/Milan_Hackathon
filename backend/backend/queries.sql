@@ -25,20 +25,20 @@ SELECT id, movie_title, movie_info FROM movies ORDER BY movie_title DESC LIMIT :
 SELECT id, movie_title, movie_info FROM movies ORDER BY movie_title ASC LIMIT :limit OFFSET :offset;
 
 
--- name: get_movie_by_id
+-- name: get_movie_by_id^
 SELECT * FROM movies WHERE id = :movie_id;
 
 -- name: get_movie_reviews
 SELECT * FROM reviews WHERE movie_id = :movie_id;
 
--- name: insert_movie_review
-INSERT INTO reviews (movie_id, user_name, user_email, review, rating, sentiment) VALUES (:movie_id, :name, :email, :review, :rating, :sentiment);
+-- name: insert_movie_review!
+INSERT INTO reviews (movie_id, user_name, user_email, review, rating) VALUES (:movie_id, :name, :email, :review, :rating);
 
 -- name: get_review_email$
-SELECT user_email FROM reviews WHERE movie_id = :movie_id AND review_id = :review_id;
+SELECT user_email FROM reviews WHERE movie_id = :movie_id AND id = :review_id;
 
 -- name: delete_movie_review!
-DELETE FROM reviews WHERE movie_id = :movie_id AND review_id = :review_id AND user_email = :user_email;
+DELETE FROM reviews WHERE movie_id = :movie_id AND id = :review_id AND user_email = :user_email;
 
--- name: get_movie_reviews_by_sentiment
-SELECT * FROM reviews WHERE movie_id = :movie_id AND sentiment = :sentiment;
+-- name: update_movie_summary!
+UPDATE movies SET summary = :summary WHERE id = :movie_id;

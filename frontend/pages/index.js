@@ -26,50 +26,31 @@ const theme = createTheme({
 
 export default function Home() {
 
-  const [trending, setTrending] = useState([]);
-  const [netflix, setNetflix] = useState([]);
   const [show, setShow] = useState(false);
   const router = useRouter();
   const [page_movies, setPageMovies] = useState([]);
 
   async function getMovies() {
-    const [
-      trendingRes,
-      netflixRes,
-    ] = await Promise.all([
-      fetch(`https://api.themoviedb.org/3${requests.fetchTrending}`),
-      fetch(`https://api.themoviedb.org/3${requests.fetchNetflixOriginals}`),
-    ]);
-    const [
-      trending,
-      netflix,
-    ] = await Promise.all([
-      trendingRes.json(),
-      netflixRes.json(),
-    ]);
-    console.log(trending.results);
-    return {
-      trending,
-      netflix,
-    };
+    const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/movies?page=${page}`);
+    const data = await res.json();
+    setPageMovies(data);
   }
-
-  useEffect(() => {
-    getMovies().then((data) => {
-      setNetflix(data.netflix);
-      setTrending(data.trending);
-    }).then(() => {
-      setShow(true);
-    });
-  }, []);
-
+  
   const [page, setPage] = useState(1);
 
   useEffect(() => {
-    if (trending.results){
-      setPageMovies(trending.results.slice((page-1)*2, page*2));
-    }
-  },[trending, page]);
+    getMovies().then(() => {
+      setShow(true);
+    });
+  }, [page]);
+
+  
+
+  // useEffect(() => {
+  //   if (trending.results){
+  //     setPageMovies(trending.results.slice((page-1)*1000, page*1000));
+  //   }
+  // },[trending, page]);
 
 
   // useEffect(() => {
@@ -93,10 +74,10 @@ export default function Home() {
         </Head>
 
         <Header />
-        <Banner movies={netflix.results} />
+        {/* <Banner movies={trending.results} /> */}
         <ThemeProvider theme={theme}>
-        <Box sx={{ display: 'flex', width: '100%', justifyContent: 'center'}}>
-        <Pagination count={10} color="secondary" showFirstButton showLastButton page={page} onChange={handlePageChange}/>
+        <Box sx={{ display: 'flex', width: '100%', justifyContent: 'center', marginTop:"15rem"}}>
+        <Pagination count={80} color="secondary" showFirstButton showLastButton page={page} onChange={handlePageChange}/>
         </Box>
         </ThemeProvider>
           <h1 className="font-bold text-xl sm:text-3xl p-3">Movies</h1>
@@ -112,9 +93,7 @@ export default function Home() {
                         className="object-cover transition-all duration-500 group-hover:opacity-50 rounded-lg"
                         width={400}
                         height={300}
-                        src={`https://image.tmdb.org/t/p/original${
-                          a.backdrop_path || a.poster_path
-                        }`}
+                        src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/posters/${a.id}.jpg`}
                         alt={a.title}
                       />
                       <div className="group-hover:flex group-hover:animation-fadeUp flex-col duration-1000  hidden absolute bottom-3  left-3">
@@ -138,10 +117,10 @@ export default function Home() {
                           <p
                             className={`text-white sm:text-3xl text-lg font-semibold`}
                           >
-                            {a.original_name || a.title}
+                            {a.movie_title}
                           </p>
                           <p className="line-clamp-3 sm:text-base text-xs pr-8">
-                            {a.overview}
+                            {a.movie_info}
                           </p>
                         </div>
                       </div>

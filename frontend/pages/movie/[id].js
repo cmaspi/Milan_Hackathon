@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, use } from "react";
 import { useRouter } from "next/router";
 import { motion } from "framer-motion";
 import Image from "next/legacy/image";
@@ -32,6 +32,7 @@ const customTheme = (outerTheme) =>
   });
 
 const steps = ['All Reviews', 'Positive Reviews', 'Neutral Reviews', 'Negative Reviews'];
+// const steps = ['1', '2abcd', 'abcdefje', 'dasljdh'];
 
 export default function Movie() {
 
@@ -43,52 +44,10 @@ export default function Movie() {
     const [activeStep, setActiveStep] = useState(0);
 
     const [movie, setMovie] = useState([]);
-    const [progress, setProgress] = useState(0);
     const [review, setReview] = useState('');
     const [rating, setRating] = useState(0);
-    const [reviews, setReviews] = useState([
-        {
-          "movie_id": 1,
-          "user_name": "Alice",
-          "user_email": "alice@example.com",
-          "review": "Great movie! I loved it.",
-          "rating": 5,
-          "sentiment": "positive"
-        },
-        {
-          "movie_id": 2,
-          "user_name": "Bob",
-          "user_email": "bob@example.com",
-          "review": "It was an average movie, nothing special. It was an average movie, nothing special.It was an average movie, nothing special.It was an average movie, nothing special.It was an average movie, nothing special.It was an average movie, nothing special.It was an average movie, nothing special.It was an average movie, nothing special.It was an average movie, nothing special.It was an average movie, nothing special.It was an average movie, nothing special.",
-          "rating": 3,
-          "sentiment": "neutral"
-        },
-        {
-          "movie_id": 3,
-          "user_name": "Charlie",
-          "user_email": "charlie@example.com",
-          "review": "Terrible film, waste of time.",
-          "rating": 1,
-          "sentiment": "negative"
-        },
-        {
-          "movie_id": 4,
-          "user_name": "David",
-          "user_email": "david@example.com",
-          "review": "I didn't like it at all. I didn't like it at all.I didn't like it at all.I didn't like it at all.I didn't like it at all.I didn't like it at all.I didn't like it at all.I didn't like it at all.I didn't like it at all.I didn't like it at all.I didn't like it at all.I didn't like it at all.I didn't like it at all.I didn't like it at all.I didn't like it at all.",
-          "rating": 2,
-          "sentiment": "negative"
-        },
-        {
-          "movie_id": 5,
-          "user_name": "Eve",
-          "user_email": "eve@example.com",
-          "review": "A decent movie, but not my favorite.",
-          "rating": 3,
-          "sentiment": "neutral"
-        }
-      ]
-      );
+
+    const [reviews, setReviews] = useState([]);
 
     const [filteredReviews, setFilteredReviews] = useState(reviews);
     
@@ -103,86 +62,115 @@ export default function Movie() {
         setReview(event.target.value);
     };
 
-    const handleAddReview = () => {
-      if (!session) {
+    async function postReview(reviewObj) {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/movies/${reviewObj.movie_id}/reviews?review=${reviewObj.review}&rating=${reviewObj.rating}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `${session?.id_token}`,
+        },
+      })
+      if (res.status === 498) {
         signIn();
         return;
       }
+    }
+
+    async function deleteReview(reviewId) {
+      const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/movies/${id}/reviews/${reviewId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `${session?.id_token}`,
+        },
+      })
+      if (res.status === 498) {
+        signIn();
+        return;
+      }
+    }
+
+    const handleAddReview = () => {
       var reviewObj = {
-          "movie_id": 1,
-          "user_name": session.user.name,
-          "user_email": session.user.email,
+          "movie_id": id,
           "review": review,
           "rating": rating,
-          "sentiment": "positive"
+          // "sentiment": "positive"
       }
       console.log(reviewObj);
       if (review.trim() !== '') {
-        setReviews([reviewObj , ...reviews]);
+        postReview(reviewObj).then(() => {
+          // setReviews([reviewObj , ...reviews]);
+          getReviews(id);
+        });
       }
+    };
+
+    const handleDeleteReview = (reviewID) => {
+      deleteReview(reviewID).then(() => {
+        getReviews(id);
+      });
     };
 
     const handleStep = (step) => () => {
       setActiveStep(step);
     }
 
-    useEffect(() => {
-      if (activeStep === 0) {
-        setFilteredReviews(reviews);
-      } else if (activeStep === 1) {
-        setFilteredReviews(reviews.filter(r => r.sentiment === "positive"));
-      } else if (activeStep === 2) {
-        setFilteredReviews(reviews.filter(r => r.sentiment === "neutral"));
-      } else if (activeStep === 3) {
-        setFilteredReviews(reviews.filter(r => r.sentiment === "negative"));
-      }
-    }, [activeStep]);
+    // useEffect(() => {
+    //   if (activeStep === 0) {
+    //     setFilteredReviews(reviews);
+    //   } else if (activeStep === 1) {
+    //     setFilteredReviews(reviews.filter(r => r.sentiment === "positive"));
+    //   } else if (activeStep === 2) {
+    //     setFilteredReviews(reviews.filter(r => r.sentiment === "neutral"));
+    //   } else if (activeStep === 3) {
+    //     setFilteredReviews(reviews.filter(r => r.sentiment === "negative"));
+    //   }
+    // }, [activeStep]);
 
     const handleRatingChange = (event) => {
         setRating(parseFloat(event.target.value));
     };
 
     async function getMovie(id) {
-        const [
-          trendingRes,
-        ] = await Promise.all([
-          fetch(`https://api.themoviedb.org/3${requests.fetchTrending}`),
-        ]);
-        console.log(trendingRes);
-        const [trending] = await Promise.all([
-          trendingRes.json(),
-        ]);
-        console.log(trending);
-        setMovie(trending.results[id]);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/movies/${id}`).then((res) => res.json());
+        console.log(res);
+        // const [trending] = await Promise.all([
+        //   trendingRes.json(),
+        // ]);
+        setMovie(res);
+    }
+
+    async function getReviews(id) {
+      const res = fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/movies/${id}/reviews`).then((res) => res.json());
+      res.then((data) => {
+        setReviews(data);
+      }
+      );
     }
 
     useEffect(() => {
-        if (id && router.isReady) {
-            getMovie(0)
+        if (id) {
+          getMovie(id)  
         }
-    }, [id, router.isReady]);
+    }, [id]);
 
-
-    // not working
     useEffect(() => {
-        const timer = setInterval(() => {
-          setProgress((prevProgress) => {
-            if (prevProgress >= movie.vote_average * 10) {
-              clearInterval(timer);
-              return movie.vote_average * 10;
-            } else {
-              return prevProgress + 1;
-            }
-          });
-        }, 30);
-    
-        return () => {
-          clearInterval(timer);
-        };
-      }, [movie]);
+      if (id) {
+        getReviews(id)  
+      }
+    }, [movie, id]);
+
+
+    // useEffect(() => {
+    //   console.log(reviews);
+    //   if (reviews.length > 0) {
+    //     setReview(reviews.filter(r => r.user_email === session.user.email)[0]?.review);
+    //     setRating(reviews.filter(r => r.user_email === session.user.email)[0]?.rating);
+    //   }
+    // }, [reviews]);
 
     return (
-        (movie?
+        (movie && reviews?
             <>
                 <Head>
                 <title>Charaka Movie Summarizer</title>
@@ -223,10 +211,8 @@ export default function Movie() {
                             layout="responsive"
                             width={400}
                             height={300}
-                            src={`https://image.tmdb.org/t/p/original${
-                                movie.backdrop_path || movie.poster_path
-                            }`}
-                            alt={movie.title}
+                            src={`${process.env.NEXT_PUBLIC_BACKEND_URL}/posters/${id}.jpg`}
+                            alt={movie.movie_title}
                             className="object-cover transition-all duration-500 group-hover:opacity-50 rounded-lg"
                         />
                         <Box
@@ -234,9 +220,9 @@ export default function Movie() {
                                 margin: 'auto',
                             }}
                         >
-                        <h2 className="text-xl font-semibold">{movie.original_title}</h2>
-                        <p className="text-yellow-500">{movie.vote_average} / 10</p>
-                        {/* <Rating name="half-rating-read" defaultValue={4} precision={0.5} readOnly /> */}
+                        <h2 className="text-xl font-semibold">{movie.movie_title}</h2>
+                        <p className="text-yellow-500">{movie.tomatometer_rating} / 100</p>
+                        <Rating name="half-rating-read" value={movie.tomatometer_rating/20} precision={0.1} readOnly />
                         {/* <Box sx={{ position: 'relative', display: 'inline-flex' }}>
                         <CircularProgress variant="determinate" value={progress} />
                         <Box
@@ -266,10 +252,17 @@ export default function Movie() {
                             paddingRight: '5rem',
                         }}
                     >   
-                        <h1 className="font-bold text-xl sm:text-3xl">Overview</h1>
-                        <p>{movie.overview}</p>
+                        {movie.movie_info?
+                        <>
+                          <h1 className="font-bold text-xl sm:text-3xl">Overview</h1>
+                          <p>{movie.movie_info}</p>
+                        </>
+                        :
+                          <>
+                          </>
+                        }
                         <h1 className="font-bold text-xl sm:text-3xl mt-4">Computed Summary</h1>
-                        <p>{movie.overview}</p>
+                        <p>{movie.summary}</p>
                         {/* <Box display="flex"
                             flexDirection="row"
                             gap={2}
@@ -307,17 +300,25 @@ export default function Movie() {
                             <Rating name="half-rating" defaultValue={2.5} precision={0.5} value={rating} onChange={handleRatingChange}
                             sx={{".MuiRating-iconEmpty":{color:"red"}, width:"150px"}}
                             />
-                            <Button
-                                variant="outlined" 
-                                color="error"
-                                onClick={handleAddReview}
-                                className="mb-4 mt-4"
-                                sx={{width:"fit-content"}}
-                                >
-                                Add Review
-                            </Button>
+                            <Box
+                              sx={{
+                                display:"flex",
+                                flexDirection:"row",
+                                gap:"1rem",
+                              }}
+                            >
+                              <Button
+                                  variant="outlined" 
+                                  color="error"
+                                  onClick={handleAddReview}
+                                  className="mb-4 mt-4"
+                                  sx={{width:"fit-content"}}
+                                  >
+                                  Add Review
+                              </Button>
+                            </Box>
                         </Box>
-                        <Stepper nonLinear activeStep={activeStep} sx={{marginTop:"3rem"}}>
+                        {/* <Stepper nonLinear activeStep={activeStep} sx={{marginTop:"3rem"}}>
                           {steps.map((label, index) => (
                             <Step key={label}
                               sx={{
@@ -335,14 +336,14 @@ export default function Movie() {
                               </StepButton>
                             </Step>
                           ))}
-                        </Stepper>
+                        </Stepper> */}
                         <h1 className="font-bold text-xl sm:text-3xl mt-10">Reviews</h1>
                                 {/* <ListItem key={index}>
                                     <ListItemText primary={r.user_name} secondary={r.user_email}/>
 
                                 </ListItem> */}
                             <List>
-                                {filteredReviews?.map((r, index) => (
+                                {reviews?.map((r, index) => (
                                     <Box key={index}>
                                     <Box
                                         sx={{
@@ -354,15 +355,34 @@ export default function Movie() {
                                     >
                                     <Typography variant="h6" fontWeight={"bold"}>
                                         {r.user_name}  
-                                        <span style={{color:"grey"}}>
-                                        {`  (${r.user_email})`}
-                                        </span>
+                                        {/* <span style={{color:"grey"}}>
+                                        {`  (${(r.user_email || "anonymous_email")})`}
+                                        </span> */}
                                     </Typography>
                                     <Rating name="half-rating-read" value={r.rating} precision={0.5} readOnly />
                                     </Box>
+                                    {r.user_email === session?.user.email?
+                                      <>
+                                        <p className="sm:text-base text-xs pr-8 mb-4">
+                                            {r.review}
+                                        </p>
+                                        <Button
+                                          variant="outlined" 
+                                          color="error"
+                                          onClick={()=>{
+                                            handleDeleteReview(r.id);
+                                          }}
+                                          className="mb-10"
+                                          sx={{width:"fit-content"}}
+                                          >
+                                          Delete Review
+                                        </Button>
+                                      </>
+                                    :
                                     <p className="sm:text-base text-xs pr-8 mb-10">
                                         {r.review}
                                     </p>
+                                    }
                                     </Box>
                                 ))}
                             </List>
