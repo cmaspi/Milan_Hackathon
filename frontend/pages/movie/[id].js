@@ -115,17 +115,17 @@ export default function Movie() {
       setActiveStep(step);
     }
 
-    // useEffect(() => {
-    //   if (activeStep === 0) {
-    //     setFilteredReviews(reviews);
-    //   } else if (activeStep === 1) {
-    //     setFilteredReviews(reviews.filter(r => r.sentiment === "positive"));
-    //   } else if (activeStep === 2) {
-    //     setFilteredReviews(reviews.filter(r => r.sentiment === "neutral"));
-    //   } else if (activeStep === 3) {
-    //     setFilteredReviews(reviews.filter(r => r.sentiment === "negative"));
-    //   }
-    // }, [activeStep]);
+    useEffect(() => {
+      if (activeStep === 0) {
+        setFilteredReviews(reviews);
+      } else if (activeStep === 1) {
+        setFilteredReviews(reviews.filter(r => r.sentiment === "positive"));
+      } else if (activeStep === 2) {
+        setFilteredReviews(reviews.filter(r => r.sentiment === "neutral"));
+      } else if (activeStep === 3) {
+        setFilteredReviews(reviews.filter(r => r.sentiment === "negative"));
+      }
+    }, [activeStep]);
 
     const handleRatingChange = (event) => {
         setRating(parseFloat(event.target.value));
@@ -318,7 +318,7 @@ export default function Movie() {
                               </Button>
                             </Box>
                         </Box>
-                        {/* <Stepper nonLinear activeStep={activeStep} sx={{marginTop:"3rem"}}>
+                        <Stepper nonLinear activeStep={activeStep} sx={{marginTop:"3rem"}}>
                           {steps.map((label, index) => (
                             <Step key={label}
                               sx={{
@@ -336,7 +336,7 @@ export default function Movie() {
                               </StepButton>
                             </Step>
                           ))}
-                        </Stepper> */}
+                        </Stepper>
                         <h1 className="font-bold text-xl sm:text-3xl mt-10">Reviews</h1>
                                 {/* <ListItem key={index}>
                                     <ListItemText primary={r.user_name} secondary={r.user_email}/>
