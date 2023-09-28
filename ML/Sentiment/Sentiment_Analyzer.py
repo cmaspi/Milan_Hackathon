@@ -25,7 +25,22 @@ def func(n):
     if n==2:
         return 'POS'
     
-def sentiment_analysis(reviews):
+def sentiment_analysis(reviews: List[str]) -> List[str]:
+    """
+    Summary
+    ---
+    Classifies each of the reviews as one of the following
+    0:Negative
+    1:Neutral
+    2:Positive
+    Input
+    ----
+    reviews List[str]: List of reviews
+
+    Returns
+    ---
+    List[str]: List of sentiment of each of the reviews.
+    """
     tokenizer = AutoTokenizer.from_pretrained("cardiffnlp/twitter-roberta-base-sentiment-latest")
     model = AutoModelForSequenceClassification.from_pretrained("cardiffnlp/twitter-roberta-base-sentiment-latest")
 
