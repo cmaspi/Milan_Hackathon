@@ -4,7 +4,7 @@ from fastapi import Depends, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from utils import verify_auth_token, conn, queries, map_info_row, map_review_row, map_movie_row
+from utils import verify_auth_token, conn, queries, map_info_row, map_review_row, map_movie_row, update_summary
 
 app = FastAPI()
 
@@ -87,6 +87,7 @@ def create_review(movie_id: str, review: str, rating: str | None = None, details
     email, name = details
     try:
         queries.insert_movie_review(conn, movie_id=movie_id, name=name, email=email, review=review, rating=rating)
+        update_summary(movie_id)
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
@@ -101,6 +102,10 @@ def delete_review(movie_id: str, review_id: int, details: Tuple[str, str] = Depe
 
     cnt = queries.delete_movie_review(conn, movie_id=movie_id, review_id=review_id, user_email=email)
     if cnt == 1:
+        try:
+            update_summary(movie_id)
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
         return {"message": "Review deleted successfully."}
     else:
         raise HTTPException(status_code=404, detail="Review not found.")

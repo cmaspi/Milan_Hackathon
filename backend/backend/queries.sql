@@ -25,6 +25,9 @@ SELECT id, movie_title, movie_info FROM movies ORDER BY movie_title DESC LIMIT :
 SELECT id, movie_title, movie_info FROM movies ORDER BY movie_title ASC LIMIT :limit OFFSET :offset;
 
 
+-- name: get_movie_title$
+SELECT movie_title FROM movies WHERE id = :movie_id;
+
 -- name: get_movie_by_id^
 SELECT * FROM movies WHERE id = :movie_id;
 

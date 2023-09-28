@@ -5,7 +5,6 @@ import Image from "next/legacy/image";
 import Banner from "../../components/Banner";
 import Head from "next/head";
 import Header from "../../components/Header";
-import requests from "../../requests";
 import { Box, CircularProgress, Typography, Avatar, TextField, Button, List, ListItem, ListItemText, Input, Rating, Stepper, Step, StepButton  } from "@mui/material";
 import { createTheme, ThemeProvider, useTheme } from '@mui/material/styles';
 import { outlinedInputClasses } from '@mui/material/OutlinedInput';

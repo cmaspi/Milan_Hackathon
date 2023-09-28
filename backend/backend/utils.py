@@ -50,9 +50,11 @@ def map_review_row(row):
         "rating": rating,
     }
 
-def update_summary(movie_title, movie_id):
+def update_summary(movie_id):
+    movie_title = queries.get_movie_title(conn, movie_id=movie_id)
     res = queries.get_movie_reviews(conn, movie_id=movie_id)
     reviews = [row[3] for row in res]
+
     summary = summarizer.summarize(movie_title, reviews)
     try:
         queries.update_movie_summary(conn, movie_id=movie_id, summary=summary)
@@ -61,10 +63,11 @@ def update_summary(movie_title, movie_id):
     print(summary)
     return summary
 
+
 def map_movie_row(row):
     id, movie_title, movie_info, release_year, directors, content_rating, genres, tomatometer_rating, summary = row
     if summary is None:
-        summary = update_summary(movie_title, id)
+        summary = update_summary(id)
     return {
         "id": id,
         "movie_title": movie_title,

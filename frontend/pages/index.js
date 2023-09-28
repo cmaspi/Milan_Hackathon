@@ -1,7 +1,6 @@
 import Head from "next/head";
 import Banner from "../components/Banner";
 import Header from "../components/Header";
-import requests from "../requests";
 import { useState, useEffect } from "react";
 import { Box, Grid, Pagination, PaginationItem } from "@mui/material";
 import Image from "next/legacy/image";
